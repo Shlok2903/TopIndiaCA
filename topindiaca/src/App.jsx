@@ -118,7 +118,6 @@ function Navigation({ isDarkMode, toggleDarkMode, toggleSearch }) {
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
   };
