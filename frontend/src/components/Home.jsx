@@ -5,6 +5,9 @@ const Home = () => {
   const [isScrolling, setIsScrolling] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [email, setEmail] = useState("");
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const pauseScroll = () => {
     setIsScrolling(false);
@@ -114,6 +117,51 @@ const Home = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!email || !email.includes("@")) {
+      setSubscriptionStatus({ type: "error", message: "Please enter a valid email address" });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubscriptionStatus(null);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/newsletter/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSubscriptionStatus({
+          type: "success",
+          message: "Subscription email sent successfully! Please check your inbox.",
+        });
+        setEmail(""); // Clear the input
+      } else {
+        setSubscriptionStatus({
+          type: "error",
+          message: data.error || "Failed to subscribe. Please try again.",
+        });
+      }
+    } catch (error) {
+      console.error("Error subscribing to newsletter:", error);
+      setSubscriptionStatus({
+        type: "error",
+        message: "Network error. Please check your connection and try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="home-page">
@@ -719,14 +767,49 @@ const Home = () => {
                   <span className="title-bullet"></span>
                   Newsletter
                 </h4>
-                <div className="newsletter-form">
+                <form className="newsletter-form" onSubmit={handleNewsletterSubmit}>
                   <input
                     type="email"
                     placeholder="Email Address"
                     className="newsletter-input"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isSubmitting}
+                    required
                   />
-                  <button className="newsletter-btn">Subscribe</button>
-                </div>
+                  <button 
+                    type="submit"
+                    className="newsletter-btn"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Subscribing..." : "Subscribe"}
+                  </button>
+                </form>
+                {subscriptionStatus && (
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      padding: "10px",
+                      borderRadius: "4px",
+                      fontSize: "0.9rem",
+                      backgroundColor:
+                        subscriptionStatus.type === "success"
+                          ? "#d4edda"
+                          : "#f8d7da",
+                      color:
+                        subscriptionStatus.type === "success"
+                          ? "#155724"
+                          : "#721c24",
+                      border: `1px solid ${
+                        subscriptionStatus.type === "success"
+                          ? "#c3e6cb"
+                          : "#f5c6cb"
+                      }`,
+                    }}
+                  >
+                    {subscriptionStatus.message}
+                  </div>
+                )}
               </div>
             </div>
           </div>
