@@ -30,7 +30,7 @@ app.get("/greeting", (req, res) => {
   res.json({ message: "Hello from backend" });
 });
 
-app.post("/newsletter/subscribe", async (req, res) => {
+app.post("/api/newsletter/subscribe", async (req, res) => {
   try {
     const { email } = req.body;
 
